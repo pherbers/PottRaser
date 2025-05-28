@@ -97,30 +97,23 @@ func _physics_process(delta):
         if compress > 0:
             # wheel is on the ground, apply friction
             var slip: float
-            var force_x = velocity_local_x * mass / delta / n_wheel_contacts# + (normal_basis.tdotx(get_gravity()) * mass / n_wheel_contacts))
-            var force_z = abs(velocity_local_z * mass / delta / n_wheel_contacts)
-            var friction_force_x = 0
-            var grav_force = normal_basis.tdoty(get_gravity()) * mass / n_wheel_contacts
-            if abs(velocity_local_x) < 1:
-                # Regain grip
-                if(whl._wheel_state == WheelSuspension.WheelState.SLIDE):
-                    print(whl.name, ": Regained Grip")
-                whl._wheel_state = WheelSuspension.WheelState.GRIP
-            if (whl._wheel_state == WheelSuspension.WheelState.GRIP and
-                abs(force_x) < abs(grav_force * 60 * whl.wheel_grip_friction_coeff)):
-                # still gripping
-                slip = whl.wheel_grip_friction_coeff
-                friction_force_x = force_x
-                whl._wheel_state = WheelSuspension.WheelState.GRIP
-            else:
-                # sliding
-                slip = whl.wheel_slide_friction_coeff
-                friction_force_x = abs(grav_force) * slip * sign(force_x)
-                if(whl._wheel_state == WheelSuspension.WheelState.GRIP):
-                    print(whl.name, ": Lost Grip, ", abs(force_x), "\t", y_force * whl.wheel_grip_friction_coeff)
-                whl._wheel_state = WheelSuspension.WheelState.SLIDE
+            var max_force_x = velocity_local_x * mass / delta / n_wheel_contacts# + (normal_basis.tdotx(get_gravity()) * mass / n_wheel_contacts))
+            #var force_z = abs(velocity_local_z * mass / delta / n_wheel_contacts)
+            #var grav_force = normal_basis.tdoty(get_gravity()) * mass / n_wheel_contacts
 
-            traction_force_x = -left * friction_force_x
+            var slip_angle = rad_to_deg(atan2(velocity_local_x, velocity_local_y))
+            var friction_force_x = 0
+            var slip_point = 3.
+            if abs(slip_angle) < slip_point:
+                whl._wheel_state = WheelSuspension.WheelState.GRIP
+                friction_force_x = slip_angle / slip_point * y_force
+            else:
+                whl._wheel_state = WheelSuspension.WheelState.SLIDE
+                friction_force_x = y_force * sign(slip_angle)
+
+            friction_force_x *= 1.5
+
+            traction_force_x = -left * sign(max_force_x) * min(abs(friction_force_x), abs(max_force_x))
 
             var zSlip = whl.wheel_grip_friction_coeff
             if whl._wheel_state == WheelSuspension.WheelState.SLIDE:
