@@ -1,0 +1,101 @@
+[gd_scene load_steps=12 format=3 uid="uid://b8cn53ch7l8yg"]
+
+[ext_resource type="PackedScene" uid="uid://do3s382dheeo" path="res://auto_taunus.tscn" id="1_hslln"]
+[ext_resource type="Texture2D" uid="uid://drnqksim5uybc" path="res://Checkerboard.png" id="3_1h22e"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="3_jatn7"]
+[ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="4_igmaq"]
+[ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="5_6n8yr"]
+[ext_resource type="ArrayMesh" uid="uid://b1bnhf858shaq" path="res://arrow.obj" id="6_igmaq"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2thsi"]
+albedo_texture = ExtResource("3_1h22e")
+uv1_scale = Vector3(10, 10, 10)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hslln"]
+size = Vector3(100, 1, 100)
+subdivide_width = 3
+subdivide_depth = 3
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hslln"]
+size = Vector3(100, 1, 100)
+
+[sub_resource type="Environment" id="Environment_hslln"]
+
+[sub_resource type="Resource" id="Resource_k7w4s"]
+script = ExtResource("5_6n8yr")
+duration = 1.0
+transition = 0
+ease = 2
+
+[node name="Testdrive" type="Node3D"]
+
+[node name="AutoTaunus" parent="." instance=ExtResource("1_hslln")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.035, 5.92234)
+
+[node name="Node3D" type="Node3D" parent="AutoTaunus"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6.76694)
+
+[node name="Node3D2" type="Node3D" parent="AutoTaunus"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.06124, -9.82818)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.3271, 95.9174)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D2"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_hslln")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7641, 0, 0.645098, -0.563422, 0.487021, 0.667357, -0.314176, -0.87339, 0.372133, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+physics_interpolation_mode = 1
+transform = Transform3D(-0.999901, 0, 0, 0, 0.990099, 0.140339, 0, 0.140352, -0.990005, 0, 4.09624, -3.90584)
+
+[node name="PhantomCameraHost" type="Node" parent="Camera3D"]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("3_jatn7")
+metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
+[node name="PhantomCamera3D" type="Node3D" parent="." node_paths=PackedStringArray("follow_target", "look_at_target")]
+transform = Transform3D(-0.999901, 0, 0, 0, 0.990099, 0.140339, 0, 0.140352, -0.990005, 0, 4.09624, -3.90584)
+top_level = true
+script = ExtResource("4_igmaq")
+follow_mode = 1
+follow_target = NodePath("../AutoTaunus/Node3D2")
+look_at_mode = 2
+look_at_target = NodePath("../AutoTaunus/Node3D")
+tween_resource = SubResource("Resource_k7w4s")
+follow_offset = Vector3(0, 3, -10)
+follow_damping = true
+collision_mask = 2
+look_at_offset = Vector3(0, 0, 5)
+look_at_damping = true
+look_at_damping_value = 0.05
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = ExtResource("6_igmaq")

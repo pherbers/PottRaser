@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5v0xuaxkre8w"]
+
+[ext_resource type="PackedScene" uid="uid://c83xrmyo2gbp7" path="res://Taunus.fbx" id="1_od7x7"]
+
+[node name="Taunus" instance=ExtResource("1_od7x7")]
