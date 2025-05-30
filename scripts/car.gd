@@ -6,21 +6,54 @@ class_name Car
 @export var viewmodel: Node3D
 @export_category("Controls")
 @export var acceleration = 100.0
-@export var max_rpm = 6000
-@export var wheel_translation = 0.01
+@export var max_motor_rpm = 6000
+@export var min_motor_rpm = 1000
+@export var motor_power = 79.
+@export var gearbox_translation = [-3.4, 2.66, 1.78, 1.3, 1.0, 0.74]
+@export var transmission_differential = 3.42
+@export var transmission_efficiency = 0.7
+@export var gearbox_shift_time = 0.3
+@export var gearbox_shift_up_rpm = 4000
+@export var gearbox_shift_down_rpm = 1500
+var gearbox_state = GEARBOX_STATE.GEAR
+enum GEARBOX_STATE {NEUTRAL, REVERSE, GEAR, SHIFTING}
+var current_gear: int = 1
+var _max_gear: int
 @export var brake_force = 1000.0
+
+@export_category("External forces")
+@export var air_drag_coef = 0.4
 
 @export_category("Wheels and Suspension")
 @export var wheels: Array[WheelSuspension]
 
 @export var motor_curve: Curve
 
+var current_speed: float
+var current_rpm: float
+
+var avg_drive_wheel_radius: float
+var n_drive_wheels: int
+
 func _ready():
     assert(len(wheels) > 0, "Car has no wheels...")
     for whl in wheels:
         assert(whl.wheel_viz != null, "No Wheel visualization for car!")
+
+    _max_gear = len(gearbox_translation) - 1
     # testing...
     apply_central_impulse(transform.basis.x * 7 + transform.basis.z * 2)
+
+    # claculate average wheel size for wheels that are connected to the motor
+    # used in the reverse rpm calculation
+    avg_drive_wheel_radius = 0.
+
+    for whl in wheels:
+        if whl.steering:
+            continue
+        avg_drive_wheel_radius += whl.wheel_radius
+        n_drive_wheels += 1
+    avg_drive_wheel_radius /= n_drive_wheels
 
 func _physics_process(delta):
     var space_state = get_world_3d().direct_space_state
@@ -32,6 +65,45 @@ func _physics_process(delta):
             n_wheel_contacts += 1
     if n_wheel_contacts == 0:
         n_wheel_contacts = 1  # to avoid div by zero
+
+    current_speed = basis.tdotz(linear_velocity)
+
+    if _shift_timer > 0:
+        _shift_timer -= delta
+        if _shift_timer <= 0:
+            _shift_timer == 0
+            if current_gear == 0:
+                gearbox_state = GEARBOX_STATE.REVERSE
+            else:
+                gearbox_state = GEARBOX_STATE.GEAR
+
+
+    var wheel_translation = 0
+    if gearbox_state == GEARBOX_STATE.GEAR:
+        wheel_translation = gearbox_translation[current_gear]
+    elif gearbox_state == GEARBOX_STATE.REVERSE:
+        wheel_translation = gearbox_translation[0]
+
+    var motor_rpm = current_speed / avg_drive_wheel_radius * wheel_translation * transmission_differential * 60. / TAU
+    motor_rpm = clampf(motor_rpm, min_motor_rpm, max_motor_rpm)
+    current_rpm = motor_rpm
+
+    if gearbox_state == GEARBOX_STATE.GEAR:
+        if current_rpm > gearbox_shift_up_rpm:
+            shift_gear_request(clamp(current_gear + 1, 1, _max_gear))
+        if current_rpm < gearbox_shift_down_rpm:
+            shift_gear_request(clamp(current_gear - 1, 1, _max_gear))
+        if current_speed < 0.001 and braking > 0.1:
+            shift_gear_request(0)
+    if gearbox_state == GEARBOX_STATE.REVERSE:
+        if current_speed > -0.001 and accelerate > 0.1:
+            shift_gear_request(1)
+
+    # Air drag
+    var velo_sqr = linear_velocity.length_squared()
+    if velo_sqr > 0.1:
+        var air_drag = -linear_velocity.normalized() * velo_sqr * air_drag_coef * 0.7 * 1.2250 * 0.5
+        apply_central_force(air_drag)
 
     for whl in wheels:
         var s = whl.position
@@ -51,7 +123,7 @@ func _physics_process(delta):
             distance = hit_pos.distance_to(sg) - wheel_radius
 
         var compress = 1 - (distance / spring_length)  # 1 is fully compressed
-        var y_force = spring * compress * spring_length
+        var y_force = spring * compress
 
         var prev_compress = whl._wheel_compression
         var damping = whl.suspension_dampening * (compress - prev_compress) / delta * spring
@@ -117,15 +189,18 @@ func _physics_process(delta):
 
             var zSlip = whl.wheel_grip_friction_coeff
             if whl._wheel_state == WheelSuspension.WheelState.SLIDE:
-                zSlip = whl.wheel_slide_friction_coeff
+                zSlip = whl.wheel_grip_friction_coeff
             # Wheel torque
             if braking > 0:
                 var bremsfaktor = 0.05
                 var brakeAlignment = forward.normalized().dot(linear_velocity.normalized())
                 traction_force_z = forward * velocity_local_z / delta * mass / n_wheel_contacts * -1 * zSlip * bremsfaktor * brakeAlignment
             elif accelerate > 0 and not is_steering:
-                var wheel_torque = motor_curve.sample_baked(rpm/max_rpm) * max_rpm * wheel_translation
-                traction_force_z = forward * wheel_torque * zSlip
+                if current_gear == 4 and gearbox_state == GEARBOX_STATE.GEAR:
+                    pass
+                var motor_torque = accelerate * motor_curve.sample_baked(inverse_lerp(min_motor_rpm, max_motor_rpm, current_rpm)) * motor_power
+                var wheel_torque = motor_torque * wheel_translation * transmission_differential * transmission_efficiency / n_drive_wheels
+                traction_force_z = forward * wheel_torque / whl.wheel_radius * zSlip
             else:
                 if(abs(velocity_local_z) > 0.01):
                     traction_force_z = -sign(velocity_local_z) * forward * whl.wheel_friction_drag
@@ -139,16 +214,19 @@ func _physics_process(delta):
         whl._last_force_debug = Basis(traction_force_x, spring_force_vec, traction_force_z)
         #print(traction_force_x.length(), "\t", spring_force_vec.length(), "\t", traction_force_z.length())
 
-        w.position = s + Vector3.DOWN * distance
+        w.global_position = whl.to_global(Vector3.DOWN * distance)
         if is_steering:
             w.rotation.y = deg_to_rad(-steering * max_steering_angle)
-    # Air drag
-    var air_drag_coef = 5
-    var velo_sqr = linear_velocity.length_squared()
-    if velo_sqr > 0.1:
-        var air_drag = -linear_velocity.normalized() * velo_sqr * air_drag_coef
-        apply_central_force(air_drag)
 
+
+var _shift_timer: float
+
+func shift_gear_request(gear):
+    if gear == current_gear:
+        return
+    _shift_timer = gearbox_shift_time
+    current_gear = gear
+    gearbox_state = GEARBOX_STATE.SHIFTING
 
 var accelerate = 0.
 var braking = 0.
@@ -157,17 +235,25 @@ var steering_target = 0.
 @export var steering_speed = 4
 
 var wheel_torque_damp: float = 1.
-var rpm: float = 0.
+#var motor_rpm: float = 0.
 
 @export var max_steering_angle = 45.
 
 func _input(event):
     if event.is_action("car_accelerate"):
         var input_acc = event.get_action_strength("car_accelerate")
-        accelerate = clampf(input_acc, 0, 1)
+        if gearbox_state != GEARBOX_STATE.REVERSE:
+            accelerate = clampf(input_acc, 0, 1)
+        else:
+            braking = clampf(input_acc, 0, 1)
+
     if event.is_action("car_brake"):
         var input_brk = event.get_action_strength("car_brake")
-        braking = clampf(input_brk, 0, 1)
+        if gearbox_state != GEARBOX_STATE.REVERSE:
+            braking = clampf(input_brk, 0, 1)
+        else:
+            accelerate = clampf(input_brk, 0, 1)
+
     if event.is_action("car_steer_left") or event.is_action("car_steer_right"):
         var input_left = event.get_action_strength("car_steer_left")
         var input_right = event.get_action_strength("car_steer_right")
@@ -175,13 +261,13 @@ func _input(event):
     #var input_steer = event.get_action_strength("car_steer")
 
 func _process(delta):
-    if accelerate > 0:
-        rpm = clampf(rpm + accelerate * acceleration * delta, 0, max_rpm)
-    if braking > 0:
-        rpm = clampf(rpm - brake_force * braking * delta, 0, max_rpm)
+    #if accelerate > 0:
+        #motor_rpm = clampf(motor_rpm + accelerate * acceleration * delta, 0, max_motor_rpm)
+    #if braking > 0:
+        #motor_rpm = clampf(motor_rpm - brake_force * braking * delta, 0, max_motor_rpm)
 
     steering = move_toward(steering, steering_target, delta * steering_speed)
-    rpm = move_toward(rpm, 0, wheel_torque_damp * delta)
+    #motor_rpm = move_toward(motor_rpm, 0, wheel_torque_damp * delta)
 
 func get_point_velocity (point :Vector3)->Vector3:
     return linear_velocity + angular_velocity.cross(point - to_global(center_of_mass))

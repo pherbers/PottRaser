@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://b8cn53ch7l8yg"]
+[gd_scene load_steps=13 format=3 uid="uid://b8cn53ch7l8yg"]
 
 [ext_resource type="PackedScene" uid="uid://do3s382dheeo" path="res://auto_taunus.tscn" id="1_hslln"]
 [ext_resource type="Texture2D" uid="uid://drnqksim5uybc" path="res://Checkerboard.png" id="3_1h22e"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="4_igmaq"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="5_6n8yr"]
 [ext_resource type="ArrayMesh" uid="uid://b1bnhf858shaq" path="res://arrow.obj" id="6_igmaq"]
+[ext_resource type="Script" uid="uid://t5c76twxy81g" path="res://scripts/car_hud.gd" id="7_6n8yr"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2thsi"]
 albedo_texture = ExtResource("3_1h22e")
@@ -31,12 +32,13 @@ ease = 2
 
 [node name="AutoTaunus" parent="." instance=ExtResource("1_hslln")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.035, 5.92234)
+transmission_efficiency = 0.7
 
 [node name="Node3D" type="Node3D" parent="AutoTaunus"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6.76694)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.76694)
 
 [node name="Node3D2" type="Node3D" parent="AutoTaunus"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.06124, -9.82818)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.06124, -4.82818)
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
@@ -44,6 +46,7 @@ collision_layer = 3
 collision_mask = 3
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
 material_override = SubResource("StandardMaterial3D_2thsi")
 mesh = SubResource("BoxMesh_hslln")
 skeleton = NodePath("../..")
@@ -52,7 +55,7 @@ skeleton = NodePath("../..")
 shape = SubResource("BoxShape3D_hslln")
 
 [node name="StaticBody3D2" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.3271, 95.9174)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 95.9174)
 collision_layer = 3
 collision_mask = 3
 
@@ -64,6 +67,123 @@ skeleton = NodePath("../..")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
 shape = SubResource("BoxShape3D_hslln")
 
+[node name="StaticBody3D3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 195.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D3"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D3"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D5" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 295.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D5"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D5"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D4" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 395.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D4"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D4"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D6" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 495.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D6"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D6"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D7" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 595.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D7"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D7"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D8" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 695.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D8"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D8"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D9" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 795.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D9"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D9"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D10" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 895.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D10"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D10"]
+shape = SubResource("BoxShape3D_hslln")
+
+[node name="StaticBody3D11" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 995.917)
+collision_layer = 3
+collision_mask = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D11"]
+material_override = SubResource("StandardMaterial3D_2thsi")
+mesh = SubResource("BoxMesh_hslln")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D11"]
+shape = SubResource("BoxShape3D_hslln")
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_hslln")
 
@@ -72,7 +192,7 @@ transform = Transform3D(0.7641, 0, 0.645098, -0.563422, 0.487021, 0.667357, -0.3
 
 [node name="Camera3D" type="Camera3D" parent="."]
 physics_interpolation_mode = 1
-transform = Transform3D(-0.999901, 0, 0, 0, 0.990099, 0.140339, 0, 0.140352, -0.990005, 0, 4.09624, -3.90584)
+transform = Transform3D(-0.999899, 0, 0, 0, 0.990279, 0.139059, 0, 0.139073, -0.990185, 0, 3.09624, 1.09416)
 
 [node name="PhantomCameraHost" type="Node" parent="Camera3D"]
 process_priority = 300
@@ -81,7 +201,7 @@ script = ExtResource("3_jatn7")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
 [node name="PhantomCamera3D" type="Node3D" parent="." node_paths=PackedStringArray("follow_target", "look_at_target")]
-transform = Transform3D(-0.999901, 0, 0, 0, 0.990099, 0.140339, 0, 0.140352, -0.990005, 0, 4.09624, -3.90584)
+transform = Transform3D(-0.999899, 0, 0, 0, 0.990279, 0.139059, 0, 0.139073, -0.990185, 0, 3.09624, 1.09416)
 top_level = true
 script = ExtResource("4_igmaq")
 follow_mode = 1
@@ -99,3 +219,67 @@ metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = ExtResource("6_igmaq")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="CarHud" type="Control" parent="CanvasLayer" node_paths=PackedStringArray("car", "speedLabel", "rpmLabel", "gearLabel")]
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 26.0
+offset_top = -112.0
+offset_right = 192.0
+offset_bottom = -25.0
+grow_vertical = 0
+size_flags_horizontal = 0
+size_flags_vertical = 8
+script = ExtResource("7_6n8yr")
+car = NodePath("../../AutoTaunus")
+speedLabel = NodePath("VBoxContainer/Control/Label2")
+rpmLabel = NodePath("VBoxContainer/Control2/Label2")
+gearLabel = NodePath("VBoxContainer/Control3/Label2")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/CarHud"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Control" type="MarginContainer" parent="CanvasLayer/CarHud/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/CarHud/VBoxContainer/Control"]
+layout_mode = 2
+text = "Geschw."
+
+[node name="Label2" type="Label" parent="CanvasLayer/CarHud/VBoxContainer/Control"]
+layout_mode = 2
+text = "20 km/h"
+horizontal_alignment = 2
+
+[node name="Control2" type="MarginContainer" parent="CanvasLayer/CarHud/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/CarHud/VBoxContainer/Control2"]
+layout_mode = 2
+text = "Drehzahl"
+
+[node name="Label2" type="Label" parent="CanvasLayer/CarHud/VBoxContainer/Control2"]
+layout_mode = 2
+text = "1000 rpm"
+horizontal_alignment = 2
+
+[node name="Control3" type="MarginContainer" parent="CanvasLayer/CarHud/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/CarHud/VBoxContainer/Control3"]
+layout_mode = 2
+text = "Gang"
+
+[node name="Label2" type="Label" parent="CanvasLayer/CarHud/VBoxContainer/Control3"]
+layout_mode = 2
+text = "N"
+horizontal_alignment = 2
