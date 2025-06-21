@@ -3,6 +3,8 @@ extends RigidBody3D
 class_name Car
 # Trying to build a raycast suspension
 # Ideas from https://lupine-vidya.itch.io/gdsim/devlog/677580/workshop-i-suspending-a-rigidbody-mirror
+# Lots of help from: https://www.asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html
+
 @export var viewmodel: Node3D
 @export_category("Controls")
 @export var acceleration = 100.0
@@ -96,7 +98,7 @@ func _physics_process(delta):
         if current_speed < 0.001 and braking > 0.1:
             shift_gear_request(0)
     if gearbox_state == GEARBOX_STATE.REVERSE:
-        if current_speed > -0.001 and accelerate > 0.1:
+        if current_speed > -0.001 and braking > 0.1:
             shift_gear_request(1)
 
     # Air drag
@@ -166,48 +168,65 @@ func _physics_process(delta):
         var velocity_local_y = normal_basis.tdoty(point_velocity)
         var velocity_local_z = normal_basis.tdotz(point_velocity)
 
-        if compress > 0:
+        if compress <= 0:
+            whl._wheel_state = WheelSuspension.WheelState.OFFGROUND
+        else:
             # wheel is on the ground, apply friction
             var slip: float
+            whl._wheel_state = WheelSuspension.WheelState.GRIP
+            if not whl.steering and braking > 0:
+                whl._wheel_state = WheelSuspension.WheelState.SLIDE
             var max_force_x = velocity_local_x * mass / delta / n_wheel_contacts# + (normal_basis.tdotx(get_gravity()) * mass / n_wheel_contacts))
             #var force_z = abs(velocity_local_z * mass / delta / n_wheel_contacts)
             #var grav_force = normal_basis.tdoty(get_gravity()) * mass / n_wheel_contacts
 
             var slip_angle = rad_to_deg(atan2(velocity_local_x, velocity_local_y))
+
+            if slip_angle > 90.:
+                slip_angle = -slip_angle + 180.
+            elif slip_angle < -90.:
+                slip_angle = -slip_angle - 180.
+            #if whl.steering:
+                #slip_angle -= steering * max_steering_angle
+                #print(steering, "\t", slip_angle)
             var friction_force_x = 0
             var slip_point = 3.
             if abs(slip_angle) < slip_point:
-                whl._wheel_state = WheelSuspension.WheelState.GRIP
                 friction_force_x = slip_angle / slip_point * y_force
             else:
-                whl._wheel_state = WheelSuspension.WheelState.SLIDE
                 friction_force_x = y_force * sign(slip_angle)
 
-            friction_force_x *= 1.5
+            #if abs(slip_angle) > 40.:
+                #whl._wheel_state = WheelSuspension.WheelState.SLIDE
+
+            if whl._wheel_state == WheelSuspension.WheelState.SLIDE:
+                friction_force_x *= whl.wheel_slide_friction_coeff
+            else:
+                friction_force_x *= whl.wheel_grip_friction_coeff
 
             traction_force_x = -left * sign(max_force_x) * min(abs(friction_force_x), abs(max_force_x))
 
             var zSlip = whl.wheel_grip_friction_coeff
             if whl._wheel_state == WheelSuspension.WheelState.SLIDE:
-                zSlip = whl.wheel_grip_friction_coeff
+                zSlip = whl.wheel_slide_friction_coeff
             # Wheel torque
             if braking > 0:
-                var bremsfaktor = 0.05
-                var brakeAlignment = forward.normalized().dot(linear_velocity.normalized())
-                traction_force_z = forward * velocity_local_z / delta * mass / n_wheel_contacts * -1 * zSlip * bremsfaktor * brakeAlignment
+                var brakeAlignment = forward.dot(linear_velocity.normalized())
+                var traction_force = zSlip * brake_force * abs(brakeAlignment)
+                traction_force_z = forward * -sign(velocity_local_z) * min(abs(traction_force), abs(velocity_local_z * mass / delta / n_wheel_contacts))
             elif accelerate > 0 and not is_steering:
-                if current_gear == 4 and gearbox_state == GEARBOX_STATE.GEAR:
-                    pass
                 var motor_torque = accelerate * motor_curve.sample_baked(inverse_lerp(min_motor_rpm, max_motor_rpm, current_rpm)) * motor_power
                 var wheel_torque = motor_torque * wheel_translation * transmission_differential * transmission_efficiency / n_drive_wheels
-                traction_force_z = forward * wheel_torque / whl.wheel_radius * zSlip
+                var traction_force = wheel_torque / whl.wheel_radius * zSlip
+                if abs(traction_force) > abs(y_force):
+                    whl._wheel_state = WheelSuspension.WheelState.SLIDE
+                    traction_force = abs(y_force) * sign(traction_force)
+                traction_force_z = forward * traction_force
             else:
                 if(abs(velocity_local_z) > 0.01):
                     traction_force_z = -sign(velocity_local_z) * forward * whl.wheel_friction_drag
                 else:
                     traction_force_z = Vector3.ZERO
-        else:
-            whl._wheel_state = WheelSuspension.WheelState.OFFGROUND
 
 
         apply_force(traction_force_x + traction_force_z + spring_force_vec, force_point)
@@ -239,35 +258,32 @@ var wheel_torque_damp: float = 1.
 
 @export var max_steering_angle = 45.
 
-func _input(event):
-    if event.is_action("car_accelerate"):
-        var input_acc = event.get_action_strength("car_accelerate")
+
+func _process(delta):
+    braking = 0
+    accelerate = 0
+    if Input.is_action_pressed("car_accelerate"):
+        var input_acc = Input.get_action_strength("car_accelerate")
         if gearbox_state != GEARBOX_STATE.REVERSE:
             accelerate = clampf(input_acc, 0, 1)
         else:
             braking = clampf(input_acc, 0, 1)
 
-    if event.is_action("car_brake"):
-        var input_brk = event.get_action_strength("car_brake")
+    if Input.is_action_pressed("car_brake"):
+        var input_brk = Input.get_action_strength("car_brake")
         if gearbox_state != GEARBOX_STATE.REVERSE:
             braking = clampf(input_brk, 0, 1)
         else:
             accelerate = clampf(input_brk, 0, 1)
 
-    if event.is_action("car_steer_left") or event.is_action("car_steer_right"):
-        var input_left = event.get_action_strength("car_steer_left")
-        var input_right = event.get_action_strength("car_steer_right")
+    if Input.is_action_pressed("car_steer_left") or Input.is_action_pressed("car_steer_right"):
+        var input_left = Input.get_action_strength("car_steer_left")
+        var input_right = Input.get_action_strength("car_steer_right")
         steering_target = clampf(input_right - input_left, -1, 1)
-    #var input_steer = event.get_action_strength("car_steer")
-
-func _process(delta):
-    #if accelerate > 0:
-        #motor_rpm = clampf(motor_rpm + accelerate * acceleration * delta, 0, max_motor_rpm)
-    #if braking > 0:
-        #motor_rpm = clampf(motor_rpm - brake_force * braking * delta, 0, max_motor_rpm)
+    else:
+        steering_target = 0
 
     steering = move_toward(steering, steering_target, delta * steering_speed)
-    #motor_rpm = move_toward(motor_rpm, 0, wheel_torque_damp * delta)
 
 func get_point_velocity (point :Vector3)->Vector3:
     return linear_velocity + angular_velocity.cross(point - to_global(center_of_mass))

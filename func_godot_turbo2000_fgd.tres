@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDFile" load_steps=8 format=3 uid="uid://b14gugphl6c2k"]
+
+[ext_resource type="Resource" uid="uid://crgpdahjaj" path="res://addons/func_godot/fgd/func_godot_fgd.tres" id="1_cd8q1"]
+[ext_resource type="Resource" uid="uid://bdji3873bg32h" path="res://addons/func_godot/fgd/worldspawn.tres" id="2_tyw3m"]
+[ext_resource type="Resource" uid="uid://b70vf4t5dc70t" path="res://addons/func_godot/fgd/func_geo.tres" id="3_88ctn"]
+[ext_resource type="Resource" uid="uid://cxy7jnh6d7msn" path="res://addons/func_godot/fgd/func_detail.tres" id="4_jh0xc"]
+[ext_resource type="Resource" uid="uid://ch3e0dix85uhb" path="res://addons/func_godot/fgd/func_detail_illusionary.tres" id="5_1xbtb"]
+[ext_resource type="Resource" uid="uid://dg5x44cc7flew" path="res://addons/func_godot/fgd/func_illusionary.tres" id="6_xep8k"]
+[ext_resource type="Script" uid="uid://bt4l4mlnnb3j8" path="res://addons/func_godot/src/fgd/func_godot_fgd_file.gd" id="7_of463"]
+
+[resource]
+script = ExtResource("7_of463")
+export_file = false
+target_map_editor = 1
+fgd_name = "Turbo2000"
+base_fgd_files = Array[Resource]([ExtResource("1_cd8q1")])
+entity_definitions = Array[Resource]([ExtResource("2_tyw3m"), ExtResource("3_88ctn"), ExtResource("4_jh0xc"), ExtResource("5_1xbtb"), ExtResource("6_xep8k")])
+metadata/_custom_type_script = "uid://bt4l4mlnnb3j8"

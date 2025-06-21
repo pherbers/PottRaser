@@ -192,7 +192,7 @@ points = PackedVector3Array(-0.00854818, 0.00244966, 0.000116239, -0.00854651, 0
 size = Vector3(1.71069, 1.10962, 4.17188)
 
 [node name="AutoTaunus" type="RigidBody3D" node_paths=PackedStringArray("viewmodel", "wheels")]
-collision_mask = 2
+collision_layer = 2
 mass = 1000.0
 linear_damp_mode = 1
 script = ExtResource("1_ujyic")
@@ -204,9 +204,12 @@ gearbox_translation = [-3.4, 2.66, 1.78, 1.0, 0.7]
 transmission_differential = 3.5
 transmission_efficiency = 0.75
 gearbox_shift_up_rpm = 3300
+brake_force = 2000.0
 air_drag_coef = 0.35
 wheels = [NodePath("WheelRF"), NodePath("WheelLF"), NodePath("WheelRB"), NodePath("WheelLB")]
 motor_curve = SubResource("Curve_ujyic")
+steering_speed = 25
+max_steering_angle = 30.0
 metadata/_custom_type_script = "uid://dxkoaqa31wnch"
 
 [node name="WheelRF" type="Node3D" parent="." node_paths=PackedStringArray("wheel_viz")]
@@ -214,7 +217,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, -0.201832, 1.51972)
 script = ExtResource("2_vfhw5")
 wheel_viz = NodePath("../Taunus2/Taunus/WheelRF")
 wheel_radius = 0.25
-wheel_friction_drag = 40
+wheel_friction_drag = 50
+wheel_grip_friction_coeff = 0.9
 steering = true
 spring_length = 0.4
 suspension_dampening = 0.1
@@ -222,14 +226,14 @@ bump = 0.0
 rebound = 0.0
 
 [node name="WheelDebug" parent="WheelRF" instance=ExtResource("3_vfhw5")]
-visible = false
 
 [node name="WheelLF" type="Node3D" parent="." node_paths=PackedStringArray("wheel_viz")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, -0.201832, 1.51972)
 script = ExtResource("2_vfhw5")
 wheel_viz = NodePath("../Taunus2/Taunus/WheelLF")
 wheel_radius = 0.25
-wheel_friction_drag = 40
+wheel_friction_drag = 50
+wheel_grip_friction_coeff = 0.9
 steering = true
 spring_length = 0.4
 suspension_dampening = 0.1
@@ -237,35 +241,34 @@ bump = 0.0
 rebound = 0.0
 
 [node name="WheelDebug" parent="WheelLF" instance=ExtResource("3_vfhw5")]
-visible = false
 
 [node name="WheelRB" type="Node3D" parent="." node_paths=PackedStringArray("wheel_viz")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, -0.201832, -1.13615)
 script = ExtResource("2_vfhw5")
 wheel_viz = NodePath("../Taunus2/Taunus/WheelRB")
 wheel_radius = 0.25
-wheel_friction_drag = 40
+wheel_friction_drag = 50
+wheel_grip_friction_coeff = 0.9
 spring_length = 0.4
 suspension_dampening = 0.1
 bump = 0.0
 rebound = 0.0
 
 [node name="WheelDebug" parent="WheelRB" instance=ExtResource("3_vfhw5")]
-visible = false
 
 [node name="WheelLB" type="Node3D" parent="." node_paths=PackedStringArray("wheel_viz")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, -0.201832, -1.13615)
 script = ExtResource("2_vfhw5")
 wheel_viz = NodePath("../Taunus2/Taunus/WheelLB")
 wheel_radius = 0.25
-wheel_friction_drag = 40
+wheel_friction_drag = 50
+wheel_grip_friction_coeff = 0.9
 spring_length = 0.4
 suspension_dampening = 0.1
 bump = 0.0
 rebound = 0.0
 
 [node name="WheelDebug" parent="WheelLB" instance=ExtResource("3_vfhw5")]
-visible = false
 
 [node name="Taunus2" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
