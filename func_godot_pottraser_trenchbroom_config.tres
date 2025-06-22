@@ -3,14 +3,14 @@
 [ext_resource type="Resource" uid="uid://b4xhdj0e16lop" path="res://addons/func_godot/game_config/trenchbroom/tb_face_tag_clip.tres" id="1_cm7w6"]
 [ext_resource type="Resource" uid="uid://ca7377sfgj074" path="res://addons/func_godot/game_config/trenchbroom/tb_face_tag_skip.tres" id="2_roxnn"]
 [ext_resource type="Resource" uid="uid://bkjxc54mmdhbo" path="res://addons/func_godot/game_config/trenchbroom/tb_face_tag_origin.tres" id="3_tl4me"]
-[ext_resource type="Resource" uid="uid://b14gugphl6c2k" path="res://func_godot_turbo2000_fgd.tres" id="4_cm7w6"]
+[ext_resource type="Resource" uid="uid://b14gugphl6c2k" path="res://func_godot_pottraser_fgd.tres" id="4_cm7w6"]
 [ext_resource type="Texture2D" uid="uid://decwujsyhj0qy" path="res://addons/func_godot/icon32.png" id="5_o31xh"]
 [ext_resource type="Script" uid="uid://bvoc8kbnc2gay" path="res://addons/func_godot/src/trenchbroom/trenchbroom_game_config.gd" id="6_1aa4j"]
 
 [resource]
 script = ExtResource("6_1aa4j")
 export_file = false
-game_name = "Turbo2000"
+game_name = "PottRaser"
 icon = ExtResource("5_o31xh")
 map_formats = Array[Dictionary]([{
 "format": "Valve",

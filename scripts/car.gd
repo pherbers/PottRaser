@@ -44,7 +44,7 @@ func _ready():
 
     _max_gear = len(gearbox_translation) - 1
     # testing...
-    apply_central_impulse(transform.basis.x * 7 + transform.basis.z * 2)
+    #apply_central_impulse(transform.basis.x * 7 + transform.basis.z * 2)
 
     # claculate average wheel size for wheels that are connected to the motor
     # used in the reverse rpm calculation
